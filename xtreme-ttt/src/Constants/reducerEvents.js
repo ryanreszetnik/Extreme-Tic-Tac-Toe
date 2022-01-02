@@ -1,0 +1,10 @@
+export const SET_SOCKET = "SET_SOCKET";
+export const SET_AUTHENTICATED = "SET_AUTHENTICATED";
+export const SET_GAMES = "SET_GAMES";
+export const ADD_GAME = "ADD_GAME";
+export const REMOVE_GAME = "REMOVE_GAME";
+export const UPDATE_GAME = "UPDATE_GAME";
+export const SET_CURRENT_GAME_ID = "SET_CURRENT_GAME_ID";
+export const UPDATE_LEADERBOARD = "UPDATE_LEADERBOARD";
+export const RESET_CURRENT_GAME = "RESET_CURRENT_GAME";
+export const SET_PAST_GAMES = "SET_PAST_GAMES";

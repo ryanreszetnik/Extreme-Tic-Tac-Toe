@@ -1,0 +1,1741 @@
+{
+  "service": {
+    "service": "ex-tic-tac-toe",
+    "serviceObject": {
+      "name": "ex-tic-tac-toe"
+    },
+    "provider": {
+      "name": "aws",
+      "runtime": "nodejs12.x",
+      "environment": {
+        "DOMAIN_SUFFIX": "ex-tic-tac-toe"
+      },
+      "lambdaHashingVersion": "20201221",
+      "profile": "serverlessUser",
+      "stage": "dev",
+      "region": "ca-central-1",
+      "httpApi": {
+        "cors": true
+      },
+      "iamRoleStatements": [
+        {
+          "Effect": "Allow",
+          "Action": [
+            "dynamodb:*",
+            "lambda:*"
+          ],
+          "Resource": "*"
+        }
+      ],
+      "versionFunctions": true,
+      "compiledCloudFormationTemplate": {
+        "AWSTemplateFormatVersion": "2010-09-09",
+        "Description": "The AWS CloudFormation template for this Serverless application",
+        "Resources": {
+          "ServerlessDeploymentBucket": {
+            "Type": "AWS::S3::Bucket",
+            "Properties": {
+              "BucketEncryption": {
+                "ServerSideEncryptionConfiguration": [
+                  {
+                    "ServerSideEncryptionByDefault": {
+                      "SSEAlgorithm": "AES256"
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          "ServerlessDeploymentBucketPolicy": {
+            "Type": "AWS::S3::BucketPolicy",
+            "Properties": {
+              "Bucket": {
+                "Ref": "ServerlessDeploymentBucket"
+              },
+              "PolicyDocument": {
+                "Statement": [
+                  {
+                    "Action": "s3:*",
+                    "Effect": "Deny",
+                    "Principal": "*",
+                    "Resource": [
+                      {
+                        "Fn::Join": [
+                          "",
+                          [
+                            "arn:",
+                            {
+                              "Ref": "AWS::Partition"
+                            },
+                            ":s3:::",
+                            {
+                              "Ref": "ServerlessDeploymentBucket"
+                            },
+                            "/*"
+                          ]
+                        ]
+                      },
+                      {
+                        "Fn::Join": [
+                          "",
+                          [
+                            "arn:",
+                            {
+                              "Ref": "AWS::Partition"
+                            },
+                            ":s3:::",
+                            {
+                              "Ref": "ServerlessDeploymentBucket"
+                            }
+                          ]
+                        ]
+                      }
+                    ],
+                    "Condition": {
+                      "Bool": {
+                        "aws:SecureTransport": false
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          "JoinDashgameLogGroup": {
+            "Type": "AWS::Logs::LogGroup",
+            "Properties": {
+              "LogGroupName": "/aws/lambda/ex-tic-tac-toe-dev-join-game"
+            }
+          },
+          "AppDashloadLogGroup": {
+            "Type": "AWS::Logs::LogGroup",
+            "Properties": {
+              "LogGroupName": "/aws/lambda/ex-tic-tac-toe-dev-app-load"
+            }
+          },
+          "SendDashmoveLogGroup": {
+            "Type": "AWS::Logs::LogGroup",
+            "Properties": {
+              "LogGroupName": "/aws/lambda/ex-tic-tac-toe-dev-send-move"
+            }
+          },
+          "ConnectLogGroup": {
+            "Type": "AWS::Logs::LogGroup",
+            "Properties": {
+              "LogGroupName": "/aws/lambda/ex-tic-tac-toe-dev-connect"
+            }
+          },
+          "DisconnectLogGroup": {
+            "Type": "AWS::Logs::LogGroup",
+            "Properties": {
+              "LogGroupName": "/aws/lambda/ex-tic-tac-toe-dev-disconnect"
+            }
+          },
+          "DefaultLogGroup": {
+            "Type": "AWS::Logs::LogGroup",
+            "Properties": {
+              "LogGroupName": "/aws/lambda/ex-tic-tac-toe-dev-default"
+            }
+          },
+          "PostConfirmationLogGroup": {
+            "Type": "AWS::Logs::LogGroup",
+            "Properties": {
+              "LogGroupName": "/aws/lambda/ex-tic-tac-toe-dev-postConfirmation"
+            }
+          },
+          "LoadDashpastDashgamesLogGroup": {
+            "Type": "AWS::Logs::LogGroup",
+            "Properties": {
+              "LogGroupName": "/aws/lambda/ex-tic-tac-toe-dev-load-past-games"
+            }
+          },
+          "IamRoleLambdaExecution": {
+            "Type": "AWS::IAM::Role",
+            "Properties": {
+              "AssumeRolePolicyDocument": {
+                "Version": "2012-10-17",
+                "Statement": [
+                  {
+                    "Effect": "Allow",
+                    "Principal": {
+                      "Service": [
+                        "lambda.amazonaws.com"
+                      ]
+                    },
+                    "Action": [
+                      "sts:AssumeRole"
+                    ]
+                  }
+                ]
+              },
+              "Policies": [
+                {
+                  "PolicyName": {
+                    "Fn::Join": [
+                      "-",
+                      [
+                        "ex-tic-tac-toe",
+                        "dev",
+                        "lambda"
+                      ]
+                    ]
+                  },
+                  "PolicyDocument": {
+                    "Version": "2012-10-17",
+                    "Statement": [
+                      {
+                        "Effect": "Allow",
+                        "Action": [
+                          "logs:CreateLogStream",
+                          "logs:CreateLogGroup"
+                        ],
+                        "Resource": [
+                          {
+                            "Fn::Sub": "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/ex-tic-tac-toe-dev*:*"
+                          }
+                        ]
+                      },
+                      {
+                        "Effect": "Allow",
+                        "Action": [
+                          "logs:PutLogEvents"
+                        ],
+                        "Resource": [
+                          {
+                            "Fn::Sub": "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/ex-tic-tac-toe-dev*:*:*"
+                          }
+                        ]
+                      },
+                      {
+                        "$ref": "$[\"service\"][\"provider\"][\"iamRoleStatements\"][0]"
+                      },
+                      {
+                        "Effect": "Allow",
+                        "Action": [
+                          "execute-api:ManageConnections"
+                        ],
+                        "Resource": [
+                          {
+                            "Fn::Sub": "arn:${AWS::Partition}:execute-api:*:*:*/@connections/*"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                }
+              ],
+              "Path": "/",
+              "RoleName": {
+                "Fn::Join": [
+                  "-",
+                  [
+                    "ex-tic-tac-toe",
+                    "dev",
+                    {
+                      "Ref": "AWS::Region"
+                    },
+                    "lambdaRole"
+                  ]
+                ]
+              }
+            }
+          },
+          "JoinDashgameLambdaFunction": {
+            "Type": "AWS::Lambda::Function",
+            "Properties": {
+              "Code": {
+                "S3Bucket": {
+                  "Ref": "ServerlessDeploymentBucket"
+                },
+                "S3Key": "serverless/ex-tic-tac-toe/dev/1641001933762-2022-01-01T01:52:13.762Z/ex-tic-tac-toe.zip"
+              },
+              "Handler": "lambdas/endpoints/game/socket-join-game.handler",
+              "Runtime": "nodejs12.x",
+              "FunctionName": "ex-tic-tac-toe-dev-join-game",
+              "MemorySize": 1024,
+              "Timeout": 6,
+              "Environment": {
+                "Variables": {
+                  "DOMAIN_SUFFIX": "ex-tic-tac-toe"
+                }
+              },
+              "Role": {
+                "Fn::GetAtt": [
+                  "IamRoleLambdaExecution",
+                  "Arn"
+                ]
+              }
+            },
+            "DependsOn": [
+              "JoinDashgameLogGroup"
+            ]
+          },
+          "AppDashloadLambdaFunction": {
+            "Type": "AWS::Lambda::Function",
+            "Properties": {
+              "Code": {
+                "S3Bucket": {
+                  "Ref": "ServerlessDeploymentBucket"
+                },
+                "S3Key": "serverless/ex-tic-tac-toe/dev/1641001933762-2022-01-01T01:52:13.762Z/ex-tic-tac-toe.zip"
+              },
+              "Handler": "lambdas/endpoints/websocket/socket-app-load.handler",
+              "Runtime": "nodejs12.x",
+              "FunctionName": "ex-tic-tac-toe-dev-app-load",
+              "MemorySize": 1024,
+              "Timeout": 6,
+              "Environment": {
+                "Variables": {
+                  "DOMAIN_SUFFIX": "ex-tic-tac-toe"
+                }
+              },
+              "Role": {
+                "Fn::GetAtt": [
+                  "IamRoleLambdaExecution",
+                  "Arn"
+                ]
+              }
+            },
+            "DependsOn": [
+              "AppDashloadLogGroup"
+            ]
+          },
+          "SendDashmoveLambdaFunction": {
+            "Type": "AWS::Lambda::Function",
+            "Properties": {
+              "Code": {
+                "S3Bucket": {
+                  "Ref": "ServerlessDeploymentBucket"
+                },
+                "S3Key": "serverless/ex-tic-tac-toe/dev/1641001933762-2022-01-01T01:52:13.762Z/ex-tic-tac-toe.zip"
+              },
+              "Handler": "lambdas/endpoints/game/socket-send-move.handler",
+              "Runtime": "nodejs12.x",
+              "FunctionName": "ex-tic-tac-toe-dev-send-move",
+              "MemorySize": 1024,
+              "Timeout": 6,
+              "Environment": {
+                "Variables": {
+                  "DOMAIN_SUFFIX": "ex-tic-tac-toe"
+                }
+              },
+              "Role": {
+                "Fn::GetAtt": [
+                  "IamRoleLambdaExecution",
+                  "Arn"
+                ]
+              }
+            },
+            "DependsOn": [
+              "SendDashmoveLogGroup"
+            ]
+          },
+          "ConnectLambdaFunction": {
+            "Type": "AWS::Lambda::Function",
+            "Properties": {
+              "Code": {
+                "S3Bucket": {
+                  "Ref": "ServerlessDeploymentBucket"
+                },
+                "S3Key": "serverless/ex-tic-tac-toe/dev/1641001933762-2022-01-01T01:52:13.762Z/ex-tic-tac-toe.zip"
+              },
+              "Handler": "lambdas/endpoints/websocket/socket-connect.handler",
+              "Runtime": "nodejs12.x",
+              "FunctionName": "ex-tic-tac-toe-dev-connect",
+              "MemorySize": 1024,
+              "Timeout": 6,
+              "Environment": {
+                "Variables": {
+                  "DOMAIN_SUFFIX": "ex-tic-tac-toe"
+                }
+              },
+              "Role": {
+                "Fn::GetAtt": [
+                  "IamRoleLambdaExecution",
+                  "Arn"
+                ]
+              }
+            },
+            "DependsOn": [
+              "ConnectLogGroup"
+            ]
+          },
+          "DisconnectLambdaFunction": {
+            "Type": "AWS::Lambda::Function",
+            "Properties": {
+              "Code": {
+                "S3Bucket": {
+                  "Ref": "ServerlessDeploymentBucket"
+                },
+                "S3Key": "serverless/ex-tic-tac-toe/dev/1641001933762-2022-01-01T01:52:13.762Z/ex-tic-tac-toe.zip"
+              },
+              "Handler": "lambdas/endpoints/websocket/socket-disconnect.handler",
+              "Runtime": "nodejs12.x",
+              "FunctionName": "ex-tic-tac-toe-dev-disconnect",
+              "MemorySize": 1024,
+              "Timeout": 6,
+              "Environment": {
+                "Variables": {
+                  "DOMAIN_SUFFIX": "ex-tic-tac-toe"
+                }
+              },
+              "Role": {
+                "Fn::GetAtt": [
+                  "IamRoleLambdaExecution",
+                  "Arn"
+                ]
+              }
+            },
+            "DependsOn": [
+              "DisconnectLogGroup"
+            ]
+          },
+          "DefaultLambdaFunction": {
+            "Type": "AWS::Lambda::Function",
+            "Properties": {
+              "Code": {
+                "S3Bucket": {
+                  "Ref": "ServerlessDeploymentBucket"
+                },
+                "S3Key": "serverless/ex-tic-tac-toe/dev/1641001933762-2022-01-01T01:52:13.762Z/ex-tic-tac-toe.zip"
+              },
+              "Handler": "lambdas/endpoints/websocket/socket-default.handler",
+              "Runtime": "nodejs12.x",
+              "FunctionName": "ex-tic-tac-toe-dev-default",
+              "MemorySize": 1024,
+              "Timeout": 6,
+              "Environment": {
+                "Variables": {
+                  "DOMAIN_SUFFIX": "ex-tic-tac-toe"
+                }
+              },
+              "Role": {
+                "Fn::GetAtt": [
+                  "IamRoleLambdaExecution",
+                  "Arn"
+                ]
+              }
+            },
+            "DependsOn": [
+              "DefaultLogGroup"
+            ]
+          },
+          "PostConfirmationLambdaFunction": {
+            "Type": "AWS::Lambda::Function",
+            "Properties": {
+              "Code": {
+                "S3Bucket": {
+                  "Ref": "ServerlessDeploymentBucket"
+                },
+                "S3Key": "serverless/ex-tic-tac-toe/dev/1641001933762-2022-01-01T01:52:13.762Z/ex-tic-tac-toe.zip"
+              },
+              "Handler": "lambdas/endpoints/cognito/http-register-account.handler",
+              "Runtime": "nodejs12.x",
+              "FunctionName": "ex-tic-tac-toe-dev-postConfirmation",
+              "MemorySize": 1024,
+              "Timeout": 6,
+              "Environment": {
+                "Variables": {
+                  "DOMAIN_SUFFIX": "ex-tic-tac-toe"
+                }
+              },
+              "Role": {
+                "Fn::GetAtt": [
+                  "IamRoleLambdaExecution",
+                  "Arn"
+                ]
+              }
+            },
+            "DependsOn": [
+              "PostConfirmationLogGroup"
+            ]
+          },
+          "LoadDashpastDashgamesLambdaFunction": {
+            "Type": "AWS::Lambda::Function",
+            "Properties": {
+              "Code": {
+                "S3Bucket": {
+                  "Ref": "ServerlessDeploymentBucket"
+                },
+                "S3Key": "serverless/ex-tic-tac-toe/dev/1641001933762-2022-01-01T01:52:13.762Z/ex-tic-tac-toe.zip"
+              },
+              "Handler": "lambdas/endpoints/game/socket-load-past-games.handler",
+              "Runtime": "nodejs12.x",
+              "FunctionName": "ex-tic-tac-toe-dev-load-past-games",
+              "MemorySize": 1024,
+              "Timeout": 6,
+              "Environment": {
+                "Variables": {
+                  "DOMAIN_SUFFIX": "ex-tic-tac-toe"
+                }
+              },
+              "Role": {
+                "Fn::GetAtt": [
+                  "IamRoleLambdaExecution",
+                  "Arn"
+                ]
+              }
+            },
+            "DependsOn": [
+              "LoadDashpastDashgamesLogGroup"
+            ]
+          },
+          "JoinDashgameLambdaVersionLOdCnSQgJZNTNjXUVEYvAqqT8Sbjkz1lh85XDQdzik": {
+            "Type": "AWS::Lambda::Version",
+            "DeletionPolicy": "Retain",
+            "Properties": {
+              "FunctionName": {
+                "Ref": "JoinDashgameLambdaFunction"
+              },
+              "CodeSha256": "884wGYplH6nTOZkKOtADdfnDJRSQw2OjRo1eS0y7WMc="
+            }
+          },
+          "AppDashloadLambdaVersionMyC63LKunmQWIZOZ1Wtbkbx44GzUzRpSTRumRsIxcjY": {
+            "Type": "AWS::Lambda::Version",
+            "DeletionPolicy": "Retain",
+            "Properties": {
+              "FunctionName": {
+                "Ref": "AppDashloadLambdaFunction"
+              },
+              "CodeSha256": "884wGYplH6nTOZkKOtADdfnDJRSQw2OjRo1eS0y7WMc="
+            }
+          },
+          "SendDashmoveLambdaVersionnByAAZvUWCZ7tTB0MUzLjIIoDzjnk2IPFK7j0XZk0M": {
+            "Type": "AWS::Lambda::Version",
+            "DeletionPolicy": "Retain",
+            "Properties": {
+              "FunctionName": {
+                "Ref": "SendDashmoveLambdaFunction"
+              },
+              "CodeSha256": "884wGYplH6nTOZkKOtADdfnDJRSQw2OjRo1eS0y7WMc="
+            }
+          },
+          "ConnectLambdaVersionFb6NPf1nyT6hJqjkPpWLY8F5qTeJZVggdyV8h8fuA": {
+            "Type": "AWS::Lambda::Version",
+            "DeletionPolicy": "Retain",
+            "Properties": {
+              "FunctionName": {
+                "Ref": "ConnectLambdaFunction"
+              },
+              "CodeSha256": "884wGYplH6nTOZkKOtADdfnDJRSQw2OjRo1eS0y7WMc="
+            }
+          },
+          "DisconnectLambdaVersionJ7vtGkW3TJzmqp1QPmnimQFhRRkKmWm8rRQdDIAFLo": {
+            "Type": "AWS::Lambda::Version",
+            "DeletionPolicy": "Retain",
+            "Properties": {
+              "FunctionName": {
+                "Ref": "DisconnectLambdaFunction"
+              },
+              "CodeSha256": "884wGYplH6nTOZkKOtADdfnDJRSQw2OjRo1eS0y7WMc="
+            }
+          },
+          "DefaultLambdaVersionKyucRIX505MJ0vETiOIxs5cjkcdHvoV1PUjPdF5cyc8": {
+            "Type": "AWS::Lambda::Version",
+            "DeletionPolicy": "Retain",
+            "Properties": {
+              "FunctionName": {
+                "Ref": "DefaultLambdaFunction"
+              },
+              "CodeSha256": "884wGYplH6nTOZkKOtADdfnDJRSQw2OjRo1eS0y7WMc="
+            }
+          },
+          "PostConfirmationLambdaVersionVlnXWgszZVNVS3AxwUjFzZmEbChD2N3RVuxsbMA": {
+            "Type": "AWS::Lambda::Version",
+            "DeletionPolicy": "Retain",
+            "Properties": {
+              "FunctionName": {
+                "Ref": "PostConfirmationLambdaFunction"
+              },
+              "CodeSha256": "884wGYplH6nTOZkKOtADdfnDJRSQw2OjRo1eS0y7WMc="
+            }
+          },
+          "LoadDashpastDashgamesLambdaVersionOcgMGAsLiu3chbNgBMY5gVR4Tx9N9SYggzIGspxg": {
+            "Type": "AWS::Lambda::Version",
+            "DeletionPolicy": "Retain",
+            "Properties": {
+              "FunctionName": {
+                "Ref": "LoadDashpastDashgamesLambdaFunction"
+              },
+              "CodeSha256": "884wGYplH6nTOZkKOtADdfnDJRSQw2OjRo1eS0y7WMc="
+            }
+          },
+          "WebsocketsApi": {
+            "Type": "AWS::ApiGatewayV2::Api",
+            "Properties": {
+              "Name": "dev-ex-tic-tac-toe-websockets",
+              "RouteSelectionExpression": "$request.body.action",
+              "Description": "Serverless Websockets",
+              "ProtocolType": "WEBSOCKET"
+            }
+          },
+          "JoinDashgameWebsocketsIntegration": {
+            "Type": "AWS::ApiGatewayV2::Integration",
+            "Properties": {
+              "ApiId": {
+                "Ref": "WebsocketsApi"
+              },
+              "IntegrationType": "AWS_PROXY",
+              "IntegrationUri": {
+                "Fn::Join": [
+                  "",
+                  [
+                    "arn:",
+                    {
+                      "Ref": "AWS::Partition"
+                    },
+                    ":apigateway:",
+                    {
+                      "Ref": "AWS::Region"
+                    },
+                    ":lambda:path/2015-03-31/functions/",
+                    {
+                      "Fn::GetAtt": [
+                        "JoinDashgameLambdaFunction",
+                        "Arn"
+                      ]
+                    },
+                    "/invocations"
+                  ]
+                ]
+              }
+            }
+          },
+          "AppDashloadWebsocketsIntegration": {
+            "Type": "AWS::ApiGatewayV2::Integration",
+            "Properties": {
+              "ApiId": {
+                "Ref": "WebsocketsApi"
+              },
+              "IntegrationType": "AWS_PROXY",
+              "IntegrationUri": {
+                "Fn::Join": [
+                  "",
+                  [
+                    "arn:",
+                    {
+                      "Ref": "AWS::Partition"
+                    },
+                    ":apigateway:",
+                    {
+                      "Ref": "AWS::Region"
+                    },
+                    ":lambda:path/2015-03-31/functions/",
+                    {
+                      "Fn::GetAtt": [
+                        "AppDashloadLambdaFunction",
+                        "Arn"
+                      ]
+                    },
+                    "/invocations"
+                  ]
+                ]
+              }
+            }
+          },
+          "SendDashmoveWebsocketsIntegration": {
+            "Type": "AWS::ApiGatewayV2::Integration",
+            "Properties": {
+              "ApiId": {
+                "Ref": "WebsocketsApi"
+              },
+              "IntegrationType": "AWS_PROXY",
+              "IntegrationUri": {
+                "Fn::Join": [
+                  "",
+                  [
+                    "arn:",
+                    {
+                      "Ref": "AWS::Partition"
+                    },
+                    ":apigateway:",
+                    {
+                      "Ref": "AWS::Region"
+                    },
+                    ":lambda:path/2015-03-31/functions/",
+                    {
+                      "Fn::GetAtt": [
+                        "SendDashmoveLambdaFunction",
+                        "Arn"
+                      ]
+                    },
+                    "/invocations"
+                  ]
+                ]
+              }
+            }
+          },
+          "ConnectWebsocketsIntegration": {
+            "Type": "AWS::ApiGatewayV2::Integration",
+            "Properties": {
+              "ApiId": {
+                "Ref": "WebsocketsApi"
+              },
+              "IntegrationType": "AWS_PROXY",
+              "IntegrationUri": {
+                "Fn::Join": [
+                  "",
+                  [
+                    "arn:",
+                    {
+                      "Ref": "AWS::Partition"
+                    },
+                    ":apigateway:",
+                    {
+                      "Ref": "AWS::Region"
+                    },
+                    ":lambda:path/2015-03-31/functions/",
+                    {
+                      "Fn::GetAtt": [
+                        "ConnectLambdaFunction",
+                        "Arn"
+                      ]
+                    },
+                    "/invocations"
+                  ]
+                ]
+              }
+            }
+          },
+          "DisconnectWebsocketsIntegration": {
+            "Type": "AWS::ApiGatewayV2::Integration",
+            "Properties": {
+              "ApiId": {
+                "Ref": "WebsocketsApi"
+              },
+              "IntegrationType": "AWS_PROXY",
+              "IntegrationUri": {
+                "Fn::Join": [
+                  "",
+                  [
+                    "arn:",
+                    {
+                      "Ref": "AWS::Partition"
+                    },
+                    ":apigateway:",
+                    {
+                      "Ref": "AWS::Region"
+                    },
+                    ":lambda:path/2015-03-31/functions/",
+                    {
+                      "Fn::GetAtt": [
+                        "DisconnectLambdaFunction",
+                        "Arn"
+                      ]
+                    },
+                    "/invocations"
+                  ]
+                ]
+              }
+            }
+          },
+          "DefaultWebsocketsIntegration": {
+            "Type": "AWS::ApiGatewayV2::Integration",
+            "Properties": {
+              "ApiId": {
+                "Ref": "WebsocketsApi"
+              },
+              "IntegrationType": "AWS_PROXY",
+              "IntegrationUri": {
+                "Fn::Join": [
+                  "",
+                  [
+                    "arn:",
+                    {
+                      "Ref": "AWS::Partition"
+                    },
+                    ":apigateway:",
+                    {
+                      "Ref": "AWS::Region"
+                    },
+                    ":lambda:path/2015-03-31/functions/",
+                    {
+                      "Fn::GetAtt": [
+                        "DefaultLambdaFunction",
+                        "Arn"
+                      ]
+                    },
+                    "/invocations"
+                  ]
+                ]
+              }
+            }
+          },
+          "LoadDashpastDashgamesWebsocketsIntegration": {
+            "Type": "AWS::ApiGatewayV2::Integration",
+            "Properties": {
+              "ApiId": {
+                "Ref": "WebsocketsApi"
+              },
+              "IntegrationType": "AWS_PROXY",
+              "IntegrationUri": {
+                "Fn::Join": [
+                  "",
+                  [
+                    "arn:",
+                    {
+                      "Ref": "AWS::Partition"
+                    },
+                    ":apigateway:",
+                    {
+                      "Ref": "AWS::Region"
+                    },
+                    ":lambda:path/2015-03-31/functions/",
+                    {
+                      "Fn::GetAtt": [
+                        "LoadDashpastDashgamesLambdaFunction",
+                        "Arn"
+                      ]
+                    },
+                    "/invocations"
+                  ]
+                ]
+              }
+            }
+          },
+          "joinGameWebsocketsRouteResponse": {
+            "Type": "AWS::ApiGatewayV2::RouteResponse",
+            "Properties": {
+              "ApiId": {
+                "Ref": "WebsocketsApi"
+              },
+              "RouteId": {
+                "Ref": "joinGameWebsocketsRoute"
+              },
+              "RouteResponseKey": "$default"
+            }
+          },
+          "appLoadWebsocketsRouteResponse": {
+            "Type": "AWS::ApiGatewayV2::RouteResponse",
+            "Properties": {
+              "ApiId": {
+                "Ref": "WebsocketsApi"
+              },
+              "RouteId": {
+                "Ref": "appLoadWebsocketsRoute"
+              },
+              "RouteResponseKey": "$default"
+            }
+          },
+          "sendMoveWebsocketsRouteResponse": {
+            "Type": "AWS::ApiGatewayV2::RouteResponse",
+            "Properties": {
+              "ApiId": {
+                "Ref": "WebsocketsApi"
+              },
+              "RouteId": {
+                "Ref": "sendMoveWebsocketsRoute"
+              },
+              "RouteResponseKey": "$default"
+            }
+          },
+          "SconnectWebsocketsRouteResponse": {
+            "Type": "AWS::ApiGatewayV2::RouteResponse",
+            "Properties": {
+              "ApiId": {
+                "Ref": "WebsocketsApi"
+              },
+              "RouteId": {
+                "Ref": "SconnectWebsocketsRoute"
+              },
+              "RouteResponseKey": "$default"
+            }
+          },
+          "SdisconnectWebsocketsRouteResponse": {
+            "Type": "AWS::ApiGatewayV2::RouteResponse",
+            "Properties": {
+              "ApiId": {
+                "Ref": "WebsocketsApi"
+              },
+              "RouteId": {
+                "Ref": "SdisconnectWebsocketsRoute"
+              },
+              "RouteResponseKey": "$default"
+            }
+          },
+          "loadPastGamesWebsocketsRouteResponse": {
+            "Type": "AWS::ApiGatewayV2::RouteResponse",
+            "Properties": {
+              "ApiId": {
+                "Ref": "WebsocketsApi"
+              },
+              "RouteId": {
+                "Ref": "loadPastGamesWebsocketsRoute"
+              },
+              "RouteResponseKey": "$default"
+            }
+          },
+          "JoinDashgameLambdaPermissionWebsockets": {
+            "Type": "AWS::Lambda::Permission",
+            "DependsOn": [
+              "WebsocketsApi",
+              "JoinDashgameLambdaFunction"
+            ],
+            "Properties": {
+              "FunctionName": {
+                "Fn::GetAtt": [
+                  "JoinDashgameLambdaFunction",
+                  "Arn"
+                ]
+              },
+              "Action": "lambda:InvokeFunction",
+              "Principal": "apigateway.amazonaws.com"
+            }
+          },
+          "AppDashloadLambdaPermissionWebsockets": {
+            "Type": "AWS::Lambda::Permission",
+            "DependsOn": [
+              "WebsocketsApi",
+              "AppDashloadLambdaFunction"
+            ],
+            "Properties": {
+              "FunctionName": {
+                "Fn::GetAtt": [
+                  "AppDashloadLambdaFunction",
+                  "Arn"
+                ]
+              },
+              "Action": "lambda:InvokeFunction",
+              "Principal": "apigateway.amazonaws.com"
+            }
+          },
+          "SendDashmoveLambdaPermissionWebsockets": {
+            "Type": "AWS::Lambda::Permission",
+            "DependsOn": [
+              "WebsocketsApi",
+              "SendDashmoveLambdaFunction"
+            ],
+            "Properties": {
+              "FunctionName": {
+                "Fn::GetAtt": [
+                  "SendDashmoveLambdaFunction",
+                  "Arn"
+                ]
+              },
+              "Action": "lambda:InvokeFunction",
+              "Principal": "apigateway.amazonaws.com"
+            }
+          },
+          "ConnectLambdaPermissionWebsockets": {
+            "Type": "AWS::Lambda::Permission",
+            "DependsOn": [
+              "WebsocketsApi",
+              "ConnectLambdaFunction"
+            ],
+            "Properties": {
+              "FunctionName": {
+                "Fn::GetAtt": [
+                  "ConnectLambdaFunction",
+                  "Arn"
+                ]
+              },
+              "Action": "lambda:InvokeFunction",
+              "Principal": "apigateway.amazonaws.com"
+            }
+          },
+          "DisconnectLambdaPermissionWebsockets": {
+            "Type": "AWS::Lambda::Permission",
+            "DependsOn": [
+              "WebsocketsApi",
+              "DisconnectLambdaFunction"
+            ],
+            "Properties": {
+              "FunctionName": {
+                "Fn::GetAtt": [
+                  "DisconnectLambdaFunction",
+                  "Arn"
+                ]
+              },
+              "Action": "lambda:InvokeFunction",
+              "Principal": "apigateway.amazonaws.com"
+            }
+          },
+          "DefaultLambdaPermissionWebsockets": {
+            "Type": "AWS::Lambda::Permission",
+            "DependsOn": [
+              "WebsocketsApi",
+              "DefaultLambdaFunction"
+            ],
+            "Properties": {
+              "FunctionName": {
+                "Fn::GetAtt": [
+                  "DefaultLambdaFunction",
+                  "Arn"
+                ]
+              },
+              "Action": "lambda:InvokeFunction",
+              "Principal": "apigateway.amazonaws.com"
+            }
+          },
+          "LoadDashpastDashgamesLambdaPermissionWebsockets": {
+            "Type": "AWS::Lambda::Permission",
+            "DependsOn": [
+              "WebsocketsApi",
+              "LoadDashpastDashgamesLambdaFunction"
+            ],
+            "Properties": {
+              "FunctionName": {
+                "Fn::GetAtt": [
+                  "LoadDashpastDashgamesLambdaFunction",
+                  "Arn"
+                ]
+              },
+              "Action": "lambda:InvokeFunction",
+              "Principal": "apigateway.amazonaws.com"
+            }
+          },
+          "joinGameWebsocketsRoute": {
+            "Type": "AWS::ApiGatewayV2::Route",
+            "Properties": {
+              "ApiId": {
+                "Ref": "WebsocketsApi"
+              },
+              "RouteKey": "joinGame",
+              "AuthorizationType": "NONE",
+              "Target": {
+                "Fn::Join": [
+                  "/",
+                  [
+                    "integrations",
+                    {
+                      "Ref": "JoinDashgameWebsocketsIntegration"
+                    }
+                  ]
+                ]
+              },
+              "RouteResponseSelectionExpression": "$default"
+            }
+          },
+          "appLoadWebsocketsRoute": {
+            "Type": "AWS::ApiGatewayV2::Route",
+            "Properties": {
+              "ApiId": {
+                "Ref": "WebsocketsApi"
+              },
+              "RouteKey": "appLoad",
+              "AuthorizationType": "NONE",
+              "Target": {
+                "Fn::Join": [
+                  "/",
+                  [
+                    "integrations",
+                    {
+                      "Ref": "AppDashloadWebsocketsIntegration"
+                    }
+                  ]
+                ]
+              },
+              "RouteResponseSelectionExpression": "$default"
+            }
+          },
+          "sendMoveWebsocketsRoute": {
+            "Type": "AWS::ApiGatewayV2::Route",
+            "Properties": {
+              "ApiId": {
+                "Ref": "WebsocketsApi"
+              },
+              "RouteKey": "sendMove",
+              "AuthorizationType": "NONE",
+              "Target": {
+                "Fn::Join": [
+                  "/",
+                  [
+                    "integrations",
+                    {
+                      "Ref": "SendDashmoveWebsocketsIntegration"
+                    }
+                  ]
+                ]
+              },
+              "RouteResponseSelectionExpression": "$default"
+            }
+          },
+          "SconnectWebsocketsRoute": {
+            "Type": "AWS::ApiGatewayV2::Route",
+            "Properties": {
+              "ApiId": {
+                "Ref": "WebsocketsApi"
+              },
+              "RouteKey": "$connect",
+              "AuthorizationType": "NONE",
+              "Target": {
+                "Fn::Join": [
+                  "/",
+                  [
+                    "integrations",
+                    {
+                      "Ref": "ConnectWebsocketsIntegration"
+                    }
+                  ]
+                ]
+              },
+              "RouteResponseSelectionExpression": "$default"
+            }
+          },
+          "SdisconnectWebsocketsRoute": {
+            "Type": "AWS::ApiGatewayV2::Route",
+            "Properties": {
+              "ApiId": {
+                "Ref": "WebsocketsApi"
+              },
+              "RouteKey": "$disconnect",
+              "AuthorizationType": "NONE",
+              "Target": {
+                "Fn::Join": [
+                  "/",
+                  [
+                    "integrations",
+                    {
+                      "Ref": "DisconnectWebsocketsIntegration"
+                    }
+                  ]
+                ]
+              },
+              "RouteResponseSelectionExpression": "$default"
+            }
+          },
+          "SdefaultWebsocketsRoute": {
+            "Type": "AWS::ApiGatewayV2::Route",
+            "Properties": {
+              "ApiId": {
+                "Ref": "WebsocketsApi"
+              },
+              "RouteKey": "$default",
+              "AuthorizationType": "NONE",
+              "Target": {
+                "Fn::Join": [
+                  "/",
+                  [
+                    "integrations",
+                    {
+                      "Ref": "DefaultWebsocketsIntegration"
+                    }
+                  ]
+                ]
+              }
+            }
+          },
+          "loadPastGamesWebsocketsRoute": {
+            "Type": "AWS::ApiGatewayV2::Route",
+            "Properties": {
+              "ApiId": {
+                "Ref": "WebsocketsApi"
+              },
+              "RouteKey": "loadPastGames",
+              "AuthorizationType": "NONE",
+              "Target": {
+                "Fn::Join": [
+                  "/",
+                  [
+                    "integrations",
+                    {
+                      "Ref": "LoadDashpastDashgamesWebsocketsIntegration"
+                    }
+                  ]
+                ]
+              },
+              "RouteResponseSelectionExpression": "$default"
+            }
+          },
+          "WebsocketsDeploymentStage": {
+            "Type": "AWS::ApiGatewayV2::Stage",
+            "Properties": {
+              "ApiId": {
+                "Ref": "WebsocketsApi"
+              },
+              "StageName": "dev",
+              "Description": "Serverless Websockets",
+              "DeploymentId": {
+                "Ref": "WebsocketsDeploymentdRVHWXSnozJVPta2fBfTadWigYxoI605PZuHLKpxHk"
+              }
+            }
+          },
+          "WebsocketsDeploymentdRVHWXSnozJVPta2fBfTadWigYxoI605PZuHLKpxHk": {
+            "Type": "AWS::ApiGatewayV2::Deployment",
+            "DependsOn": [
+              "joinGameWebsocketsRouteResponse",
+              "joinGameWebsocketsRoute",
+              "appLoadWebsocketsRouteResponse",
+              "appLoadWebsocketsRoute",
+              "sendMoveWebsocketsRouteResponse",
+              "sendMoveWebsocketsRoute",
+              "SconnectWebsocketsRouteResponse",
+              "SconnectWebsocketsRoute",
+              "SdisconnectWebsocketsRouteResponse",
+              "SdisconnectWebsocketsRoute",
+              "SdefaultWebsocketsRoute",
+              "loadPastGamesWebsocketsRouteResponse",
+              "loadPastGamesWebsocketsRoute"
+            ],
+            "Properties": {
+              "ApiId": {
+                "Ref": "WebsocketsApi"
+              },
+              "Description": "Serverless Websockets"
+            }
+          },
+          "CognitoUserPoolMyUserPool": {
+            "Type": "AWS::Cognito::UserPool",
+            "Properties": {
+              "UserPoolName": "extreme-ttt-user-pool-dev",
+              "LambdaConfig": {
+                "PostConfirmation": {
+                  "Fn::GetAtt": [
+                    "PostConfirmationLambdaFunction",
+                    "Arn"
+                  ]
+                }
+              },
+              "UsernameAttributes": [
+                "email"
+              ],
+              "AutoVerifiedAttributes": [
+                "email"
+              ]
+            },
+            "DependsOn": [
+              "PostConfirmationLambdaFunction"
+            ]
+          },
+          "PostConfirmationLambdaPermissionCognitoUserPoolMyUserPoolTriggerSourcePostConfirmation": {
+            "Type": "AWS::Lambda::Permission",
+            "Properties": {
+              "FunctionName": {
+                "Fn::GetAtt": [
+                  "PostConfirmationLambdaFunction",
+                  "Arn"
+                ]
+              },
+              "Action": "lambda:InvokeFunction",
+              "Principal": "cognito-idp.amazonaws.com",
+              "SourceArn": {
+                "Fn::GetAtt": [
+                  "CognitoUserPoolMyUserPool",
+                  "Arn"
+                ]
+              }
+            }
+          },
+          "serviceUserPoolClient": {
+            "Type": "AWS::Cognito::UserPoolClient",
+            "Properties": {
+              "ClientName": "ex-tic-tac-toe-dev-user-pool-client",
+              "UserPoolId": {
+                "Ref": "CognitoUserPoolMyUserPool"
+              },
+              "GenerateSecret": false
+            }
+          },
+          "usersTable": {
+            "Type": "AWS::DynamoDB::Table",
+            "Properties": {
+              "TableName": "exttt-users",
+              "BillingMode": "PAY_PER_REQUEST",
+              "AttributeDefinitions": [
+                {
+                  "AttributeName": "sub",
+                  "AttributeType": "S"
+                }
+              ],
+              "KeySchema": [
+                {
+                  "AttributeName": "sub",
+                  "KeyType": "HASH"
+                }
+              ]
+            }
+          },
+          "connectionsTable": {
+            "Type": "AWS::DynamoDB::Table",
+            "Properties": {
+              "TableName": "exttt-connections",
+              "BillingMode": "PAY_PER_REQUEST",
+              "AttributeDefinitions": [
+                {
+                  "AttributeName": "connId",
+                  "AttributeType": "S"
+                }
+              ],
+              "KeySchema": [
+                {
+                  "AttributeName": "connId",
+                  "KeyType": "HASH"
+                }
+              ]
+            }
+          },
+          "gamesTable": {
+            "Type": "AWS::DynamoDB::Table",
+            "Properties": {
+              "TableName": "exttt-games",
+              "BillingMode": "PAY_PER_REQUEST",
+              "AttributeDefinitions": [
+                {
+                  "AttributeName": "id",
+                  "AttributeType": "S"
+                }
+              ],
+              "KeySchema": [
+                {
+                  "AttributeName": "id",
+                  "KeyType": "HASH"
+                }
+              ]
+            }
+          }
+        },
+        "Outputs": {
+          "ServerlessDeploymentBucketName": {
+            "Value": {
+              "Ref": "ServerlessDeploymentBucket"
+            },
+            "Export": {
+              "Name": "sls-ex-tic-tac-toe-dev-ServerlessDeploymentBucketName"
+            }
+          },
+          "JoinDashgameLambdaFunctionQualifiedArn": {
+            "Description": "Current Lambda function version",
+            "Value": {
+              "Ref": "JoinDashgameLambdaVersionLOdCnSQgJZNTNjXUVEYvAqqT8Sbjkz1lh85XDQdzik"
+            },
+            "Export": {
+              "Name": "sls-ex-tic-tac-toe-dev-JoinDashgameLambdaFunctionQualifiedArn"
+            }
+          },
+          "AppDashloadLambdaFunctionQualifiedArn": {
+            "Description": "Current Lambda function version",
+            "Value": {
+              "Ref": "AppDashloadLambdaVersionMyC63LKunmQWIZOZ1Wtbkbx44GzUzRpSTRumRsIxcjY"
+            },
+            "Export": {
+              "Name": "sls-ex-tic-tac-toe-dev-AppDashloadLambdaFunctionQualifiedArn"
+            }
+          },
+          "SendDashmoveLambdaFunctionQualifiedArn": {
+            "Description": "Current Lambda function version",
+            "Value": {
+              "Ref": "SendDashmoveLambdaVersionnByAAZvUWCZ7tTB0MUzLjIIoDzjnk2IPFK7j0XZk0M"
+            },
+            "Export": {
+              "Name": "sls-ex-tic-tac-toe-dev-SendDashmoveLambdaFunctionQualifiedArn"
+            }
+          },
+          "ConnectLambdaFunctionQualifiedArn": {
+            "Description": "Current Lambda function version",
+            "Value": {
+              "Ref": "ConnectLambdaVersionFb6NPf1nyT6hJqjkPpWLY8F5qTeJZVggdyV8h8fuA"
+            },
+            "Export": {
+              "Name": "sls-ex-tic-tac-toe-dev-ConnectLambdaFunctionQualifiedArn"
+            }
+          },
+          "DisconnectLambdaFunctionQualifiedArn": {
+            "Description": "Current Lambda function version",
+            "Value": {
+              "Ref": "DisconnectLambdaVersionJ7vtGkW3TJzmqp1QPmnimQFhRRkKmWm8rRQdDIAFLo"
+            },
+            "Export": {
+              "Name": "sls-ex-tic-tac-toe-dev-DisconnectLambdaFunctionQualifiedArn"
+            }
+          },
+          "DefaultLambdaFunctionQualifiedArn": {
+            "Description": "Current Lambda function version",
+            "Value": {
+              "Ref": "DefaultLambdaVersionKyucRIX505MJ0vETiOIxs5cjkcdHvoV1PUjPdF5cyc8"
+            },
+            "Export": {
+              "Name": "sls-ex-tic-tac-toe-dev-DefaultLambdaFunctionQualifiedArn"
+            }
+          },
+          "PostConfirmationLambdaFunctionQualifiedArn": {
+            "Description": "Current Lambda function version",
+            "Value": {
+              "Ref": "PostConfirmationLambdaVersionVlnXWgszZVNVS3AxwUjFzZmEbChD2N3RVuxsbMA"
+            },
+            "Export": {
+              "Name": "sls-ex-tic-tac-toe-dev-PostConfirmationLambdaFunctionQualifiedArn"
+            }
+          },
+          "LoadDashpastDashgamesLambdaFunctionQualifiedArn": {
+            "Description": "Current Lambda function version",
+            "Value": {
+              "Ref": "LoadDashpastDashgamesLambdaVersionOcgMGAsLiu3chbNgBMY5gVR4Tx9N9SYggzIGspxg"
+            },
+            "Export": {
+              "Name": "sls-ex-tic-tac-toe-dev-LoadDashpastDashgamesLambdaFunctionQualifiedArn"
+            }
+          },
+          "ServiceEndpointWebsocket": {
+            "Description": "URL of the service endpoint",
+            "Value": {
+              "Fn::Join": [
+                "",
+                [
+                  "wss://",
+                  {
+                    "Ref": "WebsocketsApi"
+                  },
+                  ".execute-api.",
+                  {
+                    "Ref": "AWS::Region"
+                  },
+                  ".",
+                  {
+                    "Ref": "AWS::URLSuffix"
+                  },
+                  "/dev"
+                ]
+              ]
+            },
+            "Export": {
+              "Name": "sls-ex-tic-tac-toe-dev-ServiceEndpointWebsocket"
+            }
+          }
+        }
+      },
+      "coreCloudFormationTemplate": {
+        "AWSTemplateFormatVersion": "2010-09-09",
+        "Description": "The AWS CloudFormation template for this Serverless application",
+        "Resources": {
+          "ServerlessDeploymentBucket": {
+            "Type": "AWS::S3::Bucket",
+            "Properties": {
+              "BucketEncryption": {
+                "ServerSideEncryptionConfiguration": [
+                  {
+                    "ServerSideEncryptionByDefault": {
+                      "SSEAlgorithm": "AES256"
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          "ServerlessDeploymentBucketPolicy": {
+            "Type": "AWS::S3::BucketPolicy",
+            "Properties": {
+              "Bucket": {
+                "Ref": "ServerlessDeploymentBucket"
+              },
+              "PolicyDocument": {
+                "Statement": [
+                  {
+                    "Action": "s3:*",
+                    "Effect": "Deny",
+                    "Principal": "*",
+                    "Resource": [
+                      {
+                        "Fn::Join": [
+                          "",
+                          [
+                            "arn:",
+                            {
+                              "Ref": "AWS::Partition"
+                            },
+                            ":s3:::",
+                            {
+                              "Ref": "ServerlessDeploymentBucket"
+                            },
+                            "/*"
+                          ]
+                        ]
+                      },
+                      {
+                        "Fn::Join": [
+                          "",
+                          [
+                            "arn:",
+                            {
+                              "Ref": "AWS::Partition"
+                            },
+                            ":s3:::",
+                            {
+                              "Ref": "ServerlessDeploymentBucket"
+                            }
+                          ]
+                        ]
+                      }
+                    ],
+                    "Condition": {
+                      "Bool": {
+                        "aws:SecureTransport": false
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "Outputs": {
+          "ServerlessDeploymentBucketName": {
+            "Value": {
+              "Ref": "ServerlessDeploymentBucket"
+            }
+          }
+        }
+      },
+      "vpc": {}
+    },
+    "custom": {
+      "stage": "dev"
+    },
+    "pluginsData": {},
+    "functions": {
+      "join-game": {
+        "handler": "lambdas/endpoints/game/socket-join-game.handler",
+        "events": [
+          {
+            "websocket": {
+              "route": "joinGame",
+              "routeResponseSelectionExpression": "$default"
+            }
+          }
+        ],
+        "name": "ex-tic-tac-toe-dev-join-game",
+        "package": {},
+        "memory": 1024,
+        "timeout": 6,
+        "runtime": "nodejs12.x",
+        "vpc": {},
+        "versionLogicalId": "JoinDashgameLambdaVersionLOdCnSQgJZNTNjXUVEYvAqqT8Sbjkz1lh85XDQdzik"
+      },
+      "app-load": {
+        "handler": "lambdas/endpoints/websocket/socket-app-load.handler",
+        "events": [
+          {
+            "websocket": {
+              "route": "appLoad",
+              "routeResponseSelectionExpression": "$default"
+            }
+          }
+        ],
+        "name": "ex-tic-tac-toe-dev-app-load",
+        "package": {},
+        "memory": 1024,
+        "timeout": 6,
+        "runtime": "nodejs12.x",
+        "vpc": {},
+        "versionLogicalId": "AppDashloadLambdaVersionMyC63LKunmQWIZOZ1Wtbkbx44GzUzRpSTRumRsIxcjY"
+      },
+      "send-move": {
+        "handler": "lambdas/endpoints/game/socket-send-move.handler",
+        "events": [
+          {
+            "websocket": {
+              "route": "sendMove",
+              "routeResponseSelectionExpression": "$default"
+            }
+          }
+        ],
+        "name": "ex-tic-tac-toe-dev-send-move",
+        "package": {},
+        "memory": 1024,
+        "timeout": 6,
+        "runtime": "nodejs12.x",
+        "vpc": {},
+        "versionLogicalId": "SendDashmoveLambdaVersionnByAAZvUWCZ7tTB0MUzLjIIoDzjnk2IPFK7j0XZk0M"
+      },
+      "connect": {
+        "handler": "lambdas/endpoints/websocket/socket-connect.handler",
+        "events": [
+          {
+            "websocket": {
+              "route": "$connect",
+              "routeResponseSelectionExpression": "$default"
+            }
+          }
+        ],
+        "name": "ex-tic-tac-toe-dev-connect",
+        "package": {},
+        "memory": 1024,
+        "timeout": 6,
+        "runtime": "nodejs12.x",
+        "vpc": {},
+        "versionLogicalId": "ConnectLambdaVersionFb6NPf1nyT6hJqjkPpWLY8F5qTeJZVggdyV8h8fuA"
+      },
+      "disconnect": {
+        "handler": "lambdas/endpoints/websocket/socket-disconnect.handler",
+        "events": [
+          {
+            "websocket": {
+              "route": "$disconnect",
+              "routeResponseSelectionExpression": "$default"
+            }
+          }
+        ],
+        "name": "ex-tic-tac-toe-dev-disconnect",
+        "package": {},
+        "memory": 1024,
+        "timeout": 6,
+        "runtime": "nodejs12.x",
+        "vpc": {},
+        "versionLogicalId": "DisconnectLambdaVersionJ7vtGkW3TJzmqp1QPmnimQFhRRkKmWm8rRQdDIAFLo"
+      },
+      "default": {
+        "handler": "lambdas/endpoints/websocket/socket-default.handler",
+        "events": [
+          {
+            "websocket": {
+              "route": "$default"
+            }
+          }
+        ],
+        "name": "ex-tic-tac-toe-dev-default",
+        "package": {},
+        "memory": 1024,
+        "timeout": 6,
+        "runtime": "nodejs12.x",
+        "vpc": {},
+        "versionLogicalId": "DefaultLambdaVersionKyucRIX505MJ0vETiOIxs5cjkcdHvoV1PUjPdF5cyc8"
+      },
+      "postConfirmation": {
+        "handler": "lambdas/endpoints/cognito/http-register-account.handler",
+        "events": [
+          {
+            "cognitoUserPool": {
+              "pool": "MyUserPool",
+              "trigger": "PostConfirmation"
+            }
+          }
+        ],
+        "name": "ex-tic-tac-toe-dev-postConfirmation",
+        "package": {},
+        "memory": 1024,
+        "timeout": 6,
+        "runtime": "nodejs12.x",
+        "vpc": {},
+        "versionLogicalId": "PostConfirmationLambdaVersionVlnXWgszZVNVS3AxwUjFzZmEbChD2N3RVuxsbMA"
+      },
+      "load-past-games": {
+        "handler": "lambdas/endpoints/game/socket-load-past-games.handler",
+        "events": [
+          {
+            "websocket": {
+              "route": "loadPastGames",
+              "routeResponseSelectionExpression": "$default"
+            }
+          }
+        ],
+        "name": "ex-tic-tac-toe-dev-load-past-games",
+        "package": {},
+        "memory": 1024,
+        "timeout": 6,
+        "runtime": "nodejs12.x",
+        "vpc": {},
+        "versionLogicalId": "LoadDashpastDashgamesLambdaVersionOcgMGAsLiu3chbNgBMY5gVR4Tx9N9SYggzIGspxg"
+      }
+    },
+    "resources": {
+      "Resources": {
+        "CognitoUserPoolMyUserPool": {
+          "Type": "AWS::Cognito::UserPool",
+          "Properties": {
+            "UserPoolName": "extreme-ttt-user-pool-dev",
+            "UsernameAttributes": [
+              "email"
+            ],
+            "AutoVerifiedAttributes": [
+              "email"
+            ]
+          }
+        },
+        "serviceUserPoolClient": {
+          "Type": "AWS::Cognito::UserPoolClient",
+          "Properties": {
+            "ClientName": "ex-tic-tac-toe-dev-user-pool-client",
+            "UserPoolId": {
+              "Ref": "CognitoUserPoolMyUserPool"
+            },
+            "GenerateSecret": false
+          }
+        },
+        "usersTable": {
+          "Type": "AWS::DynamoDB::Table",
+          "Properties": {
+            "TableName": "exttt-users",
+            "BillingMode": "PAY_PER_REQUEST",
+            "AttributeDefinitions": [
+              {
+                "AttributeName": "sub",
+                "AttributeType": "S"
+              }
+            ],
+            "KeySchema": [
+              {
+                "AttributeName": "sub",
+                "KeyType": "HASH"
+              }
+            ]
+          }
+        },
+        "connectionsTable": {
+          "Type": "AWS::DynamoDB::Table",
+          "Properties": {
+            "TableName": "exttt-connections",
+            "BillingMode": "PAY_PER_REQUEST",
+            "AttributeDefinitions": [
+              {
+                "AttributeName": "connId",
+                "AttributeType": "S"
+              }
+            ],
+            "KeySchema": [
+              {
+                "AttributeName": "connId",
+                "KeyType": "HASH"
+              }
+            ]
+          }
+        },
+        "gamesTable": {
+          "Type": "AWS::DynamoDB::Table",
+          "Properties": {
+            "TableName": "exttt-games",
+            "BillingMode": "PAY_PER_REQUEST",
+            "AttributeDefinitions": [
+              {
+                "AttributeName": "id",
+                "AttributeType": "S"
+              }
+            ],
+            "KeySchema": [
+              {
+                "AttributeName": "id",
+                "KeyType": "HASH"
+              }
+            ]
+          }
+        }
+      },
+      "Outputs": {}
+    },
+    "configValidationMode": "warn",
+    "serviceFilename": "serverless.yml",
+    "initialServerlessConfig": {
+      "service": {
+        "$ref": "$[\"service\"][\"serviceObject\"]"
+      },
+      "frameworkVersion": "2",
+      "custom": {
+        "$ref": "$[\"service\"][\"custom\"]"
+      },
+      "provider": {
+        "$ref": "$[\"service\"][\"provider\"]"
+      },
+      "functions": {
+        "$ref": "$[\"service\"][\"functions\"]"
+      },
+      "resources": {
+        "$ref": "$[\"service\"][\"resources\"]"
+      }
+    },
+    "layers": {},
+    "isDashboardMonitoringPreconfigured": false,
+    "artifact": "/Users/rreszetnik/Desktop/Newest Tic Tac Toe/xtreme-ttt-backend/.serverless/ex-tic-tac-toe.zip"
+  },
+  "package": {
+    "artifactDirectoryName": "serverless/ex-tic-tac-toe/dev/1641001933762-2022-01-01T01:52:13.762Z",
+    "artifact": "ex-tic-tac-toe.zip"
+  }
+}
